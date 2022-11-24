@@ -4,19 +4,29 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
-const { erros } = require('celebrate');
+const { errors } = require('celebrate');
 const { PORT, DB_ADRESS } = require('./configs/index');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
+const errorHandler = require('./middlewares/errorHandler');
+const router = require('./routes/regin');
 
 const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(bodyParser.urlencoded({ extends: true }));
+app.use(requestLogger);
 
 app.use(helmet());
 
-app.use(erros());
+app.use(router);
+
+app.use(errorLogger);
+
+app.use(errors());
+
+app.use(errorHandler);
 
 mongoose.connect(DB_ADRESS, {
   useNewUrlParser: true,
