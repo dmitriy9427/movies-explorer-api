@@ -16,7 +16,7 @@ app.use(bodyParser.urlencoded({ extends: true }));
 
 app.use(helmet());
 
-//app.use(erros());
+app.use(erros());
 
 mongoose.connect(DB_ADRESS, {
   useNewUrlParser: true,
