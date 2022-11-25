@@ -9,7 +9,6 @@ const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.getCurrentUser = (res, req, next) => {
   User.findById(req.user._id)
-    // eslint-disable-next-line consistent-return
     .then((user) => {
       if (!user._id) {
         return next(new NotFound('Пользователь не найден'));

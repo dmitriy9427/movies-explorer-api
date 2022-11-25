@@ -8,7 +8,7 @@ const { errors } = require('celebrate');
 const { PORT, DB_ADRESS } = require('./configs/index');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
-const router = require('./routes/regin');
+const router = require('./routes/index');
 
 const app = express();
 
