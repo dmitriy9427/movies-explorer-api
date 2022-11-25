@@ -33,9 +33,9 @@ const createMovieValid = celebrate({
     image: Joi.string().required().custom(validateUrl),
     trailerLink: Joi.string().required().custom(validateUrl),
     thumbnail: Joi.string().required().custom(validateUrl),
-    movieId: Joi.number().required(),
     nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
+    movieId: Joi.number().required(),
   }),
 });
 
@@ -46,7 +46,7 @@ const userValid = celebrate({
   }),
 });
 
-const parameterValid = (nameId) => celebrate({
+const parameterIdValid = (nameId) => celebrate({
   params: Joi.object().keys({
     [nameId]: Joi.string().hex().required().length(24),
   }),
@@ -56,6 +56,6 @@ module.exports = {
   registerValid,
   loginValid,
   createMovieValid,
-  parameterValid,
+  parameterIdValid,
   userValid,
 };

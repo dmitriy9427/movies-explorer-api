@@ -39,7 +39,7 @@ module.exports.updateProfile = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError' || err.name === 'CastError') {
         next(new BadRequest(`Переданы некорректные данные при обновлении профиля - ${err.name}`));
-      } else if (err.code === 1100) {
+      } else if (err.code === 11000) {
         next(new Conflict('Пользователь с таким email уже зарегистрирован'));
       } else {
         next(err);
@@ -54,24 +54,17 @@ module.exports.createUser = (req, res, next) => {
   bcrypt
     .hash(password, 10)
     .then((hash) => User.create({
-      name,
-      about,
-      avatar,
-      email,
-      password: hash,
+      name, about, avatar, email, password: hash,
     }))
     .then((user) => {
       res.send({
-        name: user.name,
-        about: user.about,
-        avatar: user.avatar,
-        email: user.email,
+        name: user.name, about: user.about, avatar: user.avatar, email: user.email,
       });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequest('Переданы некорретные данные'));
-      } else if (err.code === 1100) {
+      } else if (err.code === 11000) {
         next(new Conflict('Пользователь с таким email уже зарегистрирован'));
       } else {
         next(err);

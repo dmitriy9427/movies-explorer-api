@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    minlendth: 2,
+    minlength: 2,
     maxlength: 30,
   },
   email: {
@@ -31,9 +31,7 @@ userSchema.statics.findUserByCredentials = function (email, password) {
     .select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(
-          new Unauthorized('Неверно указаны почта или пароль'),
-        );
+        return Promise.reject(new Unauthorized('Неверно указаны почта или пароль'));
       }
 
       return bcrypt.compare(password, user.password).then((matched) => {
