@@ -10,9 +10,13 @@ const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.getCurrentUser = (res, req, next) => {
   const id = req.user._id;
+
   User.findById(id)
     .then((user) => {
       res.send(user);
+    })
+    .catch((err) => {
+      res.send(err);
     })
     .catch(next);
 };
@@ -21,12 +25,15 @@ module.exports.updateProfile = (req, res, next) => {
   const id = req.user._id;
   const newName = req.body.name;
   const newEmail = req.body.email;
+
   User.findByIdAndUpdate(
     { _id: id },
     { name: newName, email: newEmail },
     { runValidators: true, new: true },
   )
-    .then((user) => res.send(user))
+    .then((user) => {
+      res.send(user);
+    })
     .catch((err) => {
       if (err.name === VALIDATION_ERROR_NAME) {
         throw new BadRequestError(err.message);

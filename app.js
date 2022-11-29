@@ -8,7 +8,7 @@ const { errors } = require('celebrate');
 const { PORT_NUMBER, DB_ADRESS, ALLOWED_CORS } = require('./utils/constants');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
-const rateLimit = require('./middlewares/rateLimit');
+// const rateLimit = require('./middlewares/rateLimit');
 const router = require('./routes/index');
 
 const app = express();
@@ -26,13 +26,7 @@ app.use(requestLogger);
 
 app.use(helmet());
 
-app.use(rateLimit);
-
-app.get('/crash-test', () => {
-  setTimeout(() => {
-    throw new Error('Сервер сейчас упадёт');
-  }, 0);
-});
+// app.use(rateLimit);
 
 app.use('/', router);
 
@@ -44,8 +38,6 @@ app.use(errorHandler);
 
 mongoose.connect(DB_ADRESS, {
   useNewUrlParser: true,
-  useCreateIndex: true,
-  useFindAndModify: false,
   useUnifiedTopology: true,
 });
 

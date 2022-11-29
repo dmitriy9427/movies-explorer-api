@@ -1,4 +1,4 @@
-const routerMovie = require('express').Router();
+const movieRouter = require('express').Router();
 
 const {
   getMovies,
@@ -8,8 +8,8 @@ const {
 
 const { validateDeleteMovie, createMovieValid } = require('../middlewares/joi');
 
-routerMovie.get('/movies', getMovies);
-routerMovie.post('/movies', createMovieValid, createMovie);
-routerMovie.delete('/movies/:movieId', validateDeleteMovie, deleteMovie);
+movieRouter.get('/movies', getMovies);
+movieRouter.post('/movies', createMovieValid, createMovie);
+movieRouter.delete('/movies/:movieId', validateDeleteMovie, deleteMovie);
 
-module.exports = routerMovie;
+module.exports = movieRouter;

@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const userRoute = require('./users');
-const movieRoute = require('./movies');
+const routerMovie = require('./movies');
 const { registerValid, loginValid } = require('../middlewares/joi');
 const { createUser, login } = require('../controllers/users');
 const auth = require('../middlewares/auth');
@@ -11,7 +11,8 @@ router.post('/signin', loginValid, login);
 router.post('/signup', registerValid, createUser);
 
 router.use(auth, userRoute);
-router.use(auth, movieRoute);
+router.use(auth, routerMovie);
+
 router.use('/*', () => {
   throw new NotFoundError(NOT_FOUND_ERROR_MESSAGE);
 });
