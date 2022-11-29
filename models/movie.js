@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const isURL = require('validator');
+const { isURL } = require('validator');
 
 const {
   MOVIE_SCHEMA_REQUIRED_MESSAGES,
@@ -31,9 +31,7 @@ const movieShema = new mongoose.Schema({
     type: String,
     required: [true, MOVIE_SCHEMA_REQUIRED_MESSAGES.IMAGE],
     validate: {
-      validator(v) {
-        return isURL(v);
-      },
+      validator: (v) => isURL(v, { required_protocol: true }),
       message: (props) => `${props.value} ${MOVIE_SCHEMA_VALIDATE_MESSAGES.IMAGE}`,
     },
   },
@@ -41,9 +39,7 @@ const movieShema = new mongoose.Schema({
     type: String,
     required: [true, MOVIE_SCHEMA_REQUIRED_MESSAGES.TRAILER_LINK],
     validate: {
-      validator(v) {
-        return isURL(v);
-      },
+      validator: (v) => isURL(v, { required_protocol: true }),
       message: (props) => `${props.value} ${MOVIE_SCHEMA_VALIDATE_MESSAGES.TRAILER_LINK}`,
     },
   },
@@ -51,9 +47,7 @@ const movieShema = new mongoose.Schema({
     type: String,
     required: [true, MOVIE_SCHEMA_REQUIRED_MESSAGES.THUMBNAIL],
     validate: {
-      validator(v) {
-        return isURL(v);
-      },
+      validator: (v) => isURL(v, { required_protocol: true }),
       message: (props) => `${props.value} ${MOVIE_SCHEMA_VALIDATE_MESSAGES.THUMBNAIL}`,
     },
   },
