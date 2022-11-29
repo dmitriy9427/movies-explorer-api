@@ -1,67 +1,55 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const { isEmail, isLength, isStrongPassword } = require('validator');
+const bcrypt = require('bcryptjs');
+const validator = require('validator');
 const UnauthorizedError = require('../errors/UnauthorizedError');
 const {
   NOT_AUTH_ERROR_WRONG_EMAIL_PASSWORD,
-  USER_SCHEMA_REQUIRED_MESSAGES,
-  USER_SCHEMA_VALIDATE_MESSAGES,
+  INVALID_EMAIL_FORMAT,
 } = require('../utils/constants');
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, USER_SCHEMA_REQUIRED_MESSAGES.NAME],
-    validate: {
-      validator(v) {
-        return isLength(v, { min: 2, max: 30 });
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      minlength: 2,
+      maxlength: 30,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: {
+        validator: (v) => validator.isEmail(v),
+        message: INVALID_EMAIL_FORMAT,
       },
-      message: (props) => `${props.value} ${USER_SCHEMA_VALIDATE_MESSAGES.NAME}`,
+    },
+    password: {
+      type: String,
+      required: true,
+      select: false,
     },
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    validate: {
-      validator(v) {
-        return isEmail(v);
-      },
-      message: (props) => `${props.value} ${USER_SCHEMA_VALIDATE_MESSAGES.EMAIL}`,
-    },
+  {
+    versionKey: false,
   },
-  password: {
-    type: String,
-    required: true,
-    select: false,
-    validate: {
-      validator(v) {
-        return isStrongPassword(v);
-      },
-      message: (props) => `${props.value} ${USER_SCHEMA_VALIDATE_MESSAGES.PASSWORD}`,
-    },
-  },
-});
+);
 
-userSchema.statics.findUserByCredentials = function (email, password) {
+userSchema.statics.findUserByCredentials = function (email, password, next) {
   return this.findOne({ email })
     .select('+password')
     .then((user) => {
       if (!user) {
-        return Promise.reject(
-          new UnauthorizedError(NOT_AUTH_ERROR_WRONG_EMAIL_PASSWORD),
-        );
+        throw new UnauthorizedError(NOT_AUTH_ERROR_WRONG_EMAIL_PASSWORD);
       }
-
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
-          return Promise.reject(
-            new UnauthorizedError(NOT_AUTH_ERROR_WRONG_EMAIL_PASSWORD),
-          );
+          throw new UnauthorizedError(NOT_AUTH_ERROR_WRONG_EMAIL_PASSWORD);
         }
         return user;
       });
-    });
+    })
+    .catch(next);
 };
 
 module.exports = mongoose.model('user', userSchema);

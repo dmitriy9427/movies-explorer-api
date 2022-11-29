@@ -8,8 +8,8 @@ const { errors } = require('celebrate');
 const { PORT_NUMBER, DB_ADRESS, ALLOWED_CORS } = require('./utils/constants');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
-// const rateLimit = require('./middlewares/rateLimit');
-const router = require('./routes/index');
+const rateLimit = require('./middlewares/rateLimiter');
+const router = require('./routes');
 
 const app = express();
 
@@ -26,9 +26,9 @@ app.use(requestLogger);
 
 app.use(helmet());
 
-// app.use(rateLimit);
+app.use(rateLimit);
 
-app.use('/', router);
+app.use(router);
 
 app.use(errorLogger);
 
@@ -36,10 +36,7 @@ app.use(errors());
 
 app.use(errorHandler);
 
-mongoose.connect(DB_ADRESS, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect(DB_ADRESS);
 
 app.listen(PORT, () => {
   console.log(`Сервер запущен, использован порт: ${PORT}`);

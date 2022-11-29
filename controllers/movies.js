@@ -1,12 +1,13 @@
 const Movies = require('../models/movie');
 const BadRequestError = require('../errors/BadRequestError');
-const ConflictError = require('../errors/ConflctError');
 const NotFoundError = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
 
 const {
   THERE_IS_NO_MOVIE_WITH_THIS_ID,
+  FILM_INVALID_DATA,
   VALIDATION_ERROR_NAME,
+  FILM_DELETE_SUCCESS,
   FORBIDDEN_DELETE_MOVIE_MESSAGE,
 } = require('../utils/constants');
 
@@ -24,37 +25,55 @@ module.exports.getMovies = (req, res, next) => {
 
 module.exports.createMovie = (req, res, next) => {
   const owner = req.user._id;
-  Movies.create({ owner, ...req.body })
-    .then((movie) => {
-      res.send({ data: movie });
-    })
+  const {
+    country,
+    director,
+    duration,
+    year,
+    description,
+    image,
+    trailerLink,
+    thumbnail,
+    movieId,
+    nameRU,
+    nameEN,
+  } = req.body;
+
+  Movies.create({
+    country,
+    director,
+    duration,
+    year,
+    description,
+    image,
+    trailerLink,
+    thumbnail,
+    owner,
+    movieId,
+    nameRU,
+    nameEN,
+  })
+    .then((movie) => res.send(movie))
     .catch((err) => {
       if (err.name === VALIDATION_ERROR_NAME) {
-        throw new BadRequestError(err.message);
-      } else if (err.code === 11000) {
-        throw new ConflictError(err.message);
+        return new BadRequestError(FILM_INVALID_DATA);
       }
-    })
-    .catch(next);
+      return next(err);
+    });
 };
 
 module.exports.deleteMovie = (req, res, next) => {
-  const owner = req.user._id;
   const { movieId } = req.params;
   Movies.findById(movieId)
+    .orFail(new NotFoundError(THERE_IS_NO_MOVIE_WITH_THIS_ID))
     .then((movie) => {
-      if (!movie) {
-        throw new NotFoundError(THERE_IS_NO_MOVIE_WITH_THIS_ID);
+      if (movie.owner.toString() !== req.user._id.toString()) {
+        return new ForbiddenError(FORBIDDEN_DELETE_MOVIE_MESSAGE);
       }
-      if (movie.owner.toString() !== owner) {
-        throw new ForbiddenError(FORBIDDEN_DELETE_MOVIE_MESSAGE);
-      } else {
-        Movies.findByIdAndDelete(movieId)
-          .then((deletedMovie) => {
-            res.send({ data: deletedMovie });
-          })
-          .catch(next);
-      }
+      return movie
+        .remove()
+        .then(() => res.send({ message: FILM_DELETE_SUCCESS }))
+        .catch((err) => next(err));
     })
-    .catch(next);
+    .catch((err) => next(err));
 };

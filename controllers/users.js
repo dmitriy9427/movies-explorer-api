@@ -1,68 +1,78 @@
-const bcrypt = require('bcrypt');
+require('dotenv').config();
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
-const ConflictError = require('../errors/ConflctError');
-const UnauthorizedError = require('../errors/UnauthorizedError');
-const { VALIDATION_ERROR_NAME } = require('../utils/constants');
+const ConflictError = require('../errors/ConflictError');
+const ForbiddenError = require('../errors/ForbiddenError');
+const {
+  BAD_REQUEST,
+  VALIDATION_ERROR_NAME,
+  USER_NOT_FOUND,
+  USER_FORBIDDEN_DATA,
+  USER_CONFLICT_EMAIL,
+} = require('../utils/constants');
+const NotFoundError = require('../errors/NotFoundError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.getCurrentUser = (res, req, next) => {
-  const id = req.user._id;
+  const userId = req.user._id;
 
-  User.findById(id)
-    .then((user) => {
-      res.send(user);
-    })
-    .catch((err) => {
-      res.send(err);
-    })
-    .catch(next);
+  User.findById(userId)
+    .orFail(new NotFoundError(USER_NOT_FOUND))
+    .then((user) => res.send(user))
+    .catch((err) => next(err));
 };
 
 module.exports.updateProfile = (req, res, next) => {
-  const id = req.user._id;
-  const newName = req.body.name;
-  const newEmail = req.body.email;
+  const userId = req.user._id;
+  const { name, email } = req.body;
 
-  User.findByIdAndUpdate(
-    { _id: id },
-    { name: newName, email: newEmail },
-    { runValidators: true, new: true },
-  )
-    .then((user) => {
-      res.send(user);
-    })
-    .catch((err) => {
-      if (err.name === VALIDATION_ERROR_NAME) {
-        throw new BadRequestError(err.message);
-      }
-    })
-    .catch(next);
+  User.findById(userId).then((user) => {
+    if (userId.toString() !== user._id.toString()) {
+      throw new ForbiddenError(USER_FORBIDDEN_DATA);
+    }
+    return User.findByIdAndUpdate(
+      userId,
+      { name, email },
+      { runValidators: true, new: true },
+    )
+      .then((userData) => {
+        if (!userData) {
+          throw new (NotFoundError(USER_NOT_FOUND))();
+        }
+        return res.send(user);
+      })
+      .catch((err) => {
+        if (err.name === VALIDATION_ERROR_NAME) {
+          return next(new ConflictError(USER_CONFLICT_EMAIL));
+        }
+        return next(err);
+      });
+  });
 };
 
 module.exports.createUser = (req, res, next) => {
+  const { name, email, password } = req.body;
+
   bcrypt
-    .hash(req.body.password, 10)
+    .hash(password, 10)
     .then((hash) => User.create({
-      name: req.body.name,
-      email: req.body.email,
+      name,
+      email,
       password: hash,
     }))
-    .then((user) => {
-      res.send({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-      });
-    })
+    .then((user) => res.send({
+      name: user.name,
+      email: user.email,
+    }))
     .catch((err) => {
       if (err.name === VALIDATION_ERROR_NAME) {
-        throw new BadRequestError(err.message);
+        return next(new BadRequestError(BAD_REQUEST));
       }
       if (err.code === 11000) {
-        throw new ConflictError(err.message);
+        return next(new ConflictError(USER_CONFLICT_EMAIL));
       }
     })
     .catch(next);
@@ -79,9 +89,6 @@ module.exports.login = (req, res, next) => {
         { expiresIn: '7d' },
       );
       res.send({ token });
-    })
-    .catch((err) => {
-      throw new UnauthorizedError(err.message);
     })
     .catch(next);
 };
