@@ -15,7 +15,7 @@ const PORT_NUMBER = 3000;
 const DB_ADRESS = 'mongodb://127.0.0.1:27017/moviesdb';
 const ALLOWED_CORS = [
   'http://localhost:3000',
-  'bac.domainname.diplomryb.nomoredomains.club',
+  'https://bac.domainname.diplomryb.nomoredomains.club',
 ];
 
 const USER_SCHEMA_REQUIRED_MESSAGES = {
