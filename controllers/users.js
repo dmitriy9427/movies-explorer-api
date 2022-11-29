@@ -1,75 +1,64 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const BadRequest = require('../errors/BadRequest');
-const Conflict = require('../errors/Conflct');
-const NotFound = require('../errors/NotFound');
+const BadRequestError = require('../errors/BadRequestError');
+const ConflictError = require('../errors/ConflctError');
+const UnauthorizedError = require('../errors/UnauthorizedError');
+const { VALIDATION_ERROR_NAME } = require('../utils/constants');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.getCurrentUser = (res, req, next) => {
-  User.findById(req.user._id)
+  const id = req.user._id;
+  User.findById(id)
     .then((user) => {
-      if (!user._id) {
-        return next(new NotFound('Пользователь не найден'));
-      }
       res.send(user);
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequest('Переданы некорректные данные'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 module.exports.updateProfile = (req, res, next) => {
-  const { name, email } = req.body;
-
+  const id = req.user._id;
+  const newName = req.body.name;
+  const newEmail = req.body.email;
   User.findByIdAndUpdate(
-    req.user._id,
-    { name, email },
-    { new: true, runValidators: true },
+    { _id: id },
+    { name: newName, email: newEmail },
+    { runValidators: true, new: true },
   )
-    .orFail(() => {
-      throw new NotFound('Пользователь по указанному _id не найден');
-    })
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError' || err.name === 'CastError') {
-        next(new BadRequest(`Переданы некорректные данные при обновлении профиля - ${err.name}`));
-      } else if (err.code === 11000) {
-        next(new Conflict('Пользователь с таким email уже зарегистрирован'));
-      } else {
-        next(err);
+      if (err.name === VALIDATION_ERROR_NAME) {
+        throw new BadRequestError(err.message);
       }
-    });
+    })
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
-  const {
-    name, about, avatar, email, password,
-  } = req.body;
   bcrypt
-    .hash(password, 10)
+    .hash(req.body.password, 10)
     .then((hash) => User.create({
-      name, about, avatar, email, password: hash,
+      name: req.body.name,
+      email: req.body.email,
+      password: hash,
     }))
     .then((user) => {
       res.send({
-        name: user.name, about: user.about, avatar: user.avatar, email: user.email,
+        _id: user._id,
+        name: user.name,
+        email: user.email,
       });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadRequest('Переданы некорретные данные'));
-      } else if (err.code === 11000) {
-        next(new Conflict('Пользователь с таким email уже зарегистрирован'));
-      } else {
-        next(err);
+      if (err.name === VALIDATION_ERROR_NAME) {
+        throw new BadRequestError(err.message);
       }
-    });
+      if (err.code === 11000) {
+        throw new ConflictError(err.message);
+      }
+    })
+    .catch(next);
 };
 
 module.exports.login = (req, res, next) => {
@@ -83,8 +72,9 @@ module.exports.login = (req, res, next) => {
         { expiresIn: '7d' },
       );
       res.send({ token });
-
-      res.send({ message: 'Регистрация прошла успешно!' });
+    })
+    .catch((err) => {
+      throw new UnauthorizedError(err.message);
     })
     .catch(next);
 };

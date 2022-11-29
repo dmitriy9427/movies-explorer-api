@@ -4,18 +4,16 @@ const movieRoute = require('./movies');
 const { registerValid, loginValid } = require('../middlewares/joi');
 const { createUser, login } = require('../controllers/users');
 const auth = require('../middlewares/auth');
-const NotFound = require('../errors/NotFound');
+const NotFoundError = require('../errors/NotFoundError');
+const { NOT_FOUND_ERROR_MESSAGE } = require('../utils/constants');
 
 router.post('/signin', loginValid, login);
-
 router.post('/signup', registerValid, createUser);
 
-router.use('/', userRoute);
-router.use('/', movieRoute);
-
-router.use(auth);
-router.use('*', (req, res, next) => {
-  next(new NotFound('Путь не найден'));
+router.use(auth, userRoute);
+router.use(auth, movieRoute);
+router.use('/*', () => {
+  throw new NotFoundError(NOT_FOUND_ERROR_MESSAGE);
 });
 
 module.exports = router;

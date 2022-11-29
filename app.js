@@ -5,14 +5,20 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
-const { PORT, DB_ADRESS } = require('./configs/index');
+const { PORT_NUMBER, DB_ADRESS, ALLOWED_CORS } = require('./utils/constants');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const errorHandler = require('./middlewares/errorHandler');
+const rateLimit = require('./middlewares/rateLimit');
 const router = require('./routes/index');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: ALLOWED_CORS,
+}));
+
+const { PORT = PORT_NUMBER } = process.env;
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -20,7 +26,15 @@ app.use(requestLogger);
 
 app.use(helmet());
 
-app.use(router);
+app.use(rateLimit);
+
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
+
+app.use('/', router);
 
 app.use(errorLogger);
 
@@ -30,6 +44,8 @@ app.use(errorHandler);
 
 mongoose.connect(DB_ADRESS, {
   useNewUrlParser: true,
+  useCreateIndex: true,
+  useFindAndModify: false,
   useUnifiedTopology: true,
 });
 

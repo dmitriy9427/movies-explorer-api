@@ -1,5 +1,4 @@
-const router = require('express').Router();
-const auth = require('../middlewares/auth');
+const routerMovie = require('express').Router();
 
 const {
   getMovies,
@@ -7,10 +6,10 @@ const {
   deleteMovie,
 } = require('../controllers/movies');
 
-const { parameterIdValid, createMovieValid } = require('../middlewares/joi');
+const { validateDeleteMovie, createMovieValid } = require('../middlewares/joi');
 
-router.get('/movies', auth, getMovies);
-router.post('/movies', auth, createMovieValid, createMovie);
-router.delete('/movies/:_id', auth, parameterIdValid('_id'), deleteMovie);
+routerMovie.get('/movies', getMovies);
+routerMovie.post('/movies', createMovieValid, createMovie);
+routerMovie.delete('/movies/:movieId', validateDeleteMovie, deleteMovie);
 
-module.exports = router;
+module.exports = routerMovie;
