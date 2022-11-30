@@ -8,8 +8,8 @@ const {
 
 const { validateDeleteMovie, createMovieValid } = require('../middlewares/joi');
 
-movieRouter.get('/movies', getMovies);
-movieRouter.post('/movies', createMovieValid, createMovie);
-movieRouter.delete('/movies/:movieId', validateDeleteMovie, deleteMovie);
+movieRouter.get('/', getMovies);
+movieRouter.post('/', createMovieValid, createMovie);
+movieRouter.delete('/:movieId', validateDeleteMovie, deleteMovie);
 
 module.exports = movieRouter;

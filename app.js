@@ -28,6 +28,8 @@ app.use(helmet());
 
 app.use(rateLimit);
 
+mongoose.connect(DB_ADRESS);
+
 app.use(router);
 
 app.use(errorLogger);
@@ -35,8 +37,6 @@ app.use(errorLogger);
 app.use(errors());
 
 app.use(errorHandler);
-
-mongoose.connect(DB_ADRESS);
 
 app.listen(PORT, () => {
   console.log(`Сервер запущен, использован порт: ${PORT}`);
