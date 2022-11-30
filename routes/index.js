@@ -7,13 +7,15 @@ const auth = require('../middlewares/auth');
 const NotFoundError = require('../errors/NotFoundError');
 
 router.post('/signin', loginValid, login);
+
 router.post('/signup', registerValid, createUser);
 
-router.use(auth);
 router.use('/users', auth, userRoute);
+
 router.use('/movies', auth, movieRouter);
+
 router.use('*', auth, (req, res, next) => {
-  next(new NotFoundError('Страница с таким URL не найденаю'));
+  next(new NotFoundError('Страница с таким URL не найдена'));
 });
 
 module.exports = router;
