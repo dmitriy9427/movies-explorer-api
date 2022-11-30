@@ -29,7 +29,7 @@ const createMovieValid = celebrate({
     country: Joi.string().required().min(1).max(100),
     director: Joi.string().required().min(1).max(100),
     duration: Joi.number().required(),
-    year: Joi.string().required().min(1985),
+    year: Joi.string().required(),
     description: Joi.string().required().min(1).max(1000),
     image: Joi.string().required().custom(validateUrl),
     trailerLink: Joi.string().required().custom(validateUrl),
