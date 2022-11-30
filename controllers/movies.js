@@ -1,4 +1,4 @@
-const Movies = require('../models/movie');
+const Movie = require('../models/movie');
 const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const ForbiddenError = require('../errors/ForbiddenError');
@@ -7,13 +7,13 @@ const {
   THERE_IS_NO_MOVIE_WITH_THIS_ID,
   FILM_INVALID_DATA,
   VALIDATION_ERROR_NAME,
-  FILM_DELETE_SUCCESS,
   FORBIDDEN_DELETE_MOVIE_MESSAGE,
 } = require('../utils/constants');
 
 module.exports.getMovies = (req, res, next) => {
-  const owner = req.user._id;
-  Movies.find({ owner })
+  const owners = req.user._id;
+
+  Movie.find({ owners })
     .then((movies) => {
       res.send(movies);
     })
@@ -26,7 +26,7 @@ module.exports.getMovies = (req, res, next) => {
 module.exports.createMovie = (req, res, next) => {
   const owner = req.user._id;
 
-  Movies.create({ owner, ...req.body })
+  Movie.create({ owner, ...req.body })
     .then((movie) => res.send(movie))
     .catch((err) => {
       if (err.name === VALIDATION_ERROR_NAME) {
@@ -37,17 +37,22 @@ module.exports.createMovie = (req, res, next) => {
 };
 
 module.exports.deleteMovie = (req, res, next) => {
+  const owner = req.user._id;
   const { movieId } = req.params;
-  Movies.findById(movieId)
-    .orFail(new NotFoundError(THERE_IS_NO_MOVIE_WITH_THIS_ID))
+  Movie.findById(movieId)
     .then((movie) => {
-      if (movie.owner.toString() !== req.user._id.toString()) {
-        return new ForbiddenError(FORBIDDEN_DELETE_MOVIE_MESSAGE);
+      if (!movie) {
+        throw new NotFoundError(THERE_IS_NO_MOVIE_WITH_THIS_ID);
       }
-      return movie
-        .remove()
-        .then(() => res.send({ message: FILM_DELETE_SUCCESS }))
-        .catch((err) => next(err));
+      if (movie.owner.toString() !== owner) {
+        throw new ForbiddenError(FORBIDDEN_DELETE_MOVIE_MESSAGE);
+      } else {
+        Movie.findByIdAndDelete(movieId)
+          .then((deletedMovie) => {
+            res.send(deletedMovie);
+          })
+          .catch(next);
+      }
     })
-    .catch((err) => next(err));
+    .catch(next);
 };
