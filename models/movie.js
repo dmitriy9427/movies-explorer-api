@@ -70,9 +70,6 @@ const movieShema = new mongoose.Schema(
       required: [true, MOVIE_SCHEMA_REQUIRED_MESSAGES.NAME_EN],
     },
   },
-  {
-    versionKey: false,
-  },
 );
 
 module.exports = mongoose.model('movie', movieShema);

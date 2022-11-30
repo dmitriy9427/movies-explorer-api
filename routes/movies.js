@@ -10,6 +10,6 @@ const { validateDeleteMovie, createMovieValid } = require('../middlewares/joi');
 
 movieRouter.get('/', getMovies);
 movieRouter.post('/', createMovieValid, createMovie);
-movieRouter.delete('/:id', validateDeleteMovie, deleteMovie);
+movieRouter.delete('/:movieId', validateDeleteMovie, deleteMovie);
 
 module.exports = movieRouter;
