@@ -6,6 +6,7 @@ const USER_FORBIDDEN_DATA = 'Нельзя изменить даннные дру
 const USER_NOT_FOUND = 'Пользователь по указанному id не найден.';
 const THERE_IS_NO_MOVIE_WITH_THIS_ID = 'Нет фильма с таким id';
 const VALIDATION_ERROR_NAME = 'ValidationError';
+const CAST_ERR_NAME = 'CastError';
 const ERROR_KIND_OBJECT_ID = 'ObjectId';
 const FORBIDDEN_DELETE_MOVIE_MESSAGE = 'Нет доступа к удалению фильма';
 const NOT_FOUND_ERROR_MESSAGE = 'Запрашиваемый ресурс не найден';
@@ -72,6 +73,7 @@ module.exports = {
   USER_NOT_FOUND,
   THERE_IS_NO_MOVIE_WITH_THIS_ID,
   VALIDATION_ERROR_NAME,
+  CAST_ERR_NAME,
   FILM_INVALID_DATA,
   USER_FORBIDDEN_DATA,
   ERROR_KIND_OBJECT_ID,

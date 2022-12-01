@@ -4,12 +4,11 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const BadRequestError = require('../errors/BadRequestError');
 const ConflictError = require('../errors/ConflictError');
-const ForbiddenError = require('../errors/ForbiddenError');
 const {
   BAD_REQUEST,
   VALIDATION_ERROR_NAME,
   USER_NOT_FOUND,
-  USER_FORBIDDEN_DATA,
+  CAST_ERR_NAME,
   USER_CONFLICT_EMAIL,
 } = require('../utils/constants');
 const NotFoundError = require('../errors/NotFoundError');
@@ -26,31 +25,26 @@ module.exports.getCurrentUser = (res, req, next) => {
 };
 
 module.exports.updateProfile = (req, res, next) => {
-  const userId = req.user._id;
   const { name, email } = req.body;
 
-  User.findById(userId).then((user) => {
-    if (userId.toString() !== user._id.toString()) {
-      throw new ForbiddenError(USER_FORBIDDEN_DATA);
-    }
-    return User.findByIdAndUpdate(
-      userId,
-      { name, email },
-      { runValidators: true, new: true },
-    )
-      .then((userData) => {
-        if (!userData) {
-          throw new (NotFoundError(USER_NOT_FOUND))();
-        }
-        return res.send(user);
-      })
-      .catch((err) => {
-        if (err.name === VALIDATION_ERROR_NAME) {
-          return next(new ConflictError(USER_CONFLICT_EMAIL));
-        }
-        return next(err);
-      });
-  });
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, email },
+    { runValidators: true, new: true },
+  )
+    .orFail(() => {
+      throw new NotFoundError(USER_NOT_FOUND);
+    })
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.name === VALIDATION_ERROR_NAME || err.name === CAST_ERR_NAME) {
+        next(new BadRequestError(BAD_REQUEST));
+      } else if (err.code === 11000) {
+        next(new ConflictError(USER_CONFLICT_EMAIL));
+      } else {
+        next(err);
+      }
+    });
 };
 
 module.exports.createUser = (req, res, next) => {

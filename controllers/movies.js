@@ -11,14 +11,9 @@ const {
 } = require('../utils/constants');
 
 module.exports.getMovies = (req, res, next) => {
-  const owners = req.user._id;
-
-  Movie.find({ owners })
+  Movie.find({ owner: req.user._id })
     .then((movies) => {
       res.send(movies);
-    })
-    .catch((err) => {
-      throw new NotFoundError(err.message);
     })
     .catch(next);
 };
@@ -30,7 +25,7 @@ module.exports.createMovie = (req, res, next) => {
     .then((movie) => res.send(movie))
     .catch((err) => {
       if (err.name === VALIDATION_ERROR_NAME) {
-        return new BadRequestError(FILM_INVALID_DATA);
+        next(new BadRequestError(FILM_INVALID_DATA));
       }
       return next(err);
     });
