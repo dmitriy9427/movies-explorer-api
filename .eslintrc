@@ -1,0 +1,16 @@
+{
+  "extends": "airbnb-base",
+  "rules": {
+    "no-console": "off",
+    "linebreak-style": 0,
+    "global-require": 0,
+    "eslint-disable": 0,
+    "eslint-disable-line": 0,
+    "eslint-disable-next-line": 0,
+    "func-names": 0,
+    "consistent-return": 0,
+    "eslint linebreak-style": [0, "error", "windows"],
+    "quotes": ["error", "single"],
+    "no-underscore-dangle": ["error", { "allow": ["_id"] }]
+  }
+}
