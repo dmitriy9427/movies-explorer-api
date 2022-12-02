@@ -20,8 +20,8 @@ module.exports.getCurrentUser = (res, req, next) => {
 
   User.findById(userId)
     .orFail(new NotFoundError(USER_NOT_FOUND))
-    .then((user) => res.send(user))
-    .catch((err) => next(err));
+    .then((user) => { res.send(user); })
+    .catch(next);
 };
 
 module.exports.updateProfile = (req, res, next) => {
