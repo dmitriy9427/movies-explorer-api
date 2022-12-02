@@ -53,17 +53,10 @@ const userValid = celebrate({
   }),
 });
 
-const validateId = celebrate({
-  params: Joi.object().keys({
-    _id: Joi.string().required().hex().length(24),
-  }),
-});
-
 module.exports = {
   registerValid,
   loginValid,
   createMovieValid,
-  validateId,
   validateDeleteMovie,
   userValid,
 };
