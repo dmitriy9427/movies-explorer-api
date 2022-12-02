@@ -15,12 +15,16 @@ const NotFoundError = require('../errors/NotFoundError');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-module.exports.getCurrentUser = (res, req, next) => {
-  const userId = req.user._id;
+module.exports.getCurrentUser = (req, res, next) => {
+  const id = req.user._id;
 
-  User.findById(userId)
-    .orFail(new NotFoundError(USER_NOT_FOUND))
-    .then((user) => { res.send(user); })
+  User.findById(id)
+    .then((user) => {
+      res.send(user);
+    })
+    .catch((err) => {
+      res.send(err);
+    })
     .catch(next);
 };
 
