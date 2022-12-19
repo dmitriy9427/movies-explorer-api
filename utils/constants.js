@@ -25,6 +25,7 @@ const ALLOWED_CORS = [
   'http://localhost:3000',
   'https://bac.domainname.diplomryb.nomoredomains.club',
   'http://bac.domainname.diplomryb.nomoredomains.club',
+  'https://domainname.diplomryabov.nomoredomains.club',
 ];
 
 const USER_SCHEMA_REQUIRED_MESSAGES = {
