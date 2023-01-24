@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
-const validator = require("validator");
+const mongoose = require('mongoose');
+const validator = require('validator');
 
 const {
   INVALID_LINK,
   MOVIE_SCHEMA_REQUIRED_MESSAGES,
-} = require("../utils/constants");
+} = require('../utils/constants');
 
 const movieShema = new mongoose.Schema({
   country: {
@@ -54,7 +54,7 @@ const movieShema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     required: [true, MOVIE_SCHEMA_REQUIRED_MESSAGES.OWNER],
-    ref: "user",
+    ref: 'user',
   },
   movieId: {
     type: Number,
@@ -70,4 +70,4 @@ const movieShema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("movie", movieShema);
+module.exports = mongoose.model('movie', movieShema);
